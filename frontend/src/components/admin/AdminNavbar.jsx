@@ -9,7 +9,12 @@ const AdminNavbar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/admin/login');
+    navigate('/');
+  };
+
+  const handleHome = () => {
+    logout();
+    navigate('/');
   };
 
   return (
@@ -27,6 +32,7 @@ const AdminNavbar = () => {
             <Link to="/admin/staff" className="admin-navbar-link">Staff</Link>
             <div className="admin-navbar-user">
               <span>{admin.name}</span>
+              <button onClick={handleHome} className="admin-home-btn">Home</button>
               <button onClick={handleLogout} className="admin-logout-btn">Logout</button>
             </div>
           </div>

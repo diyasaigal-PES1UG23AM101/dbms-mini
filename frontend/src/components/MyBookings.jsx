@@ -37,6 +37,40 @@ const MyBookings = () => {
     }
   };
 
+  const handlePay = async (bookingId) => {
+    const paymentMethod = window.prompt('Enter payment method (Cash/Card/UPI/Wallet):', 'Cash');
+    if (!paymentMethod) {
+      return;
+    }
+
+    const transactionId = window.prompt('Enter transaction ID (optional, press Cancel to skip):');
+
+    try {
+      await api.put(`/bookings/${bookingId}/pay`, {
+        paymentMethod: paymentMethod || 'Cash',
+        transactionId: transactionId || null
+      });
+      fetchBookings();
+      alert('Payment recorded successfully!');
+    } catch (error) {
+      alert(error.response?.data?.error || 'Failed to process payment');
+    }
+  };
+
+  const handleConfirm = async (bookingId) => {
+    if (!window.confirm('Are you sure you want to confirm this booking?')) {
+      return;
+    }
+
+    try {
+      await api.put(`/bookings/${bookingId}/confirm`);
+      fetchBookings();
+      alert('Booking confirmed successfully!');
+    } catch (error) {
+      alert(error.response?.data?.error || 'Failed to confirm booking');
+    }
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -130,6 +164,22 @@ const MyBookings = () => {
               {booking.Booking_Status !== 'Cancelled' && 
                booking.Booking_Status !== 'Completed' && (
                 <div className="booking-actions">
+                  {booking.Payment_Status === 'Unpaid' && (
+                    <button
+                      onClick={() => handlePay(booking.Booking_ID)}
+                      className="pay-btn"
+                    >
+                      Mark as Paid
+                    </button>
+                  )}
+                  {booking.Booking_Status === 'Pending' && booking.Payment_Status === 'Paid' && (
+                    <button
+                      onClick={() => handleConfirm(booking.Booking_ID)}
+                      className="confirm-btn"
+                    >
+                      Confirm Booking
+                    </button>
+                  )}
                   <button
                     onClick={() => handleCancel(booking.Booking_ID)}
                     className="cancel-btn"

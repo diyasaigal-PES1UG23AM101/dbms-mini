@@ -9,7 +9,12 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
+  };
+
+  const handleHome = () => {
+    logout();
+    navigate('/');
   };
 
   return (
@@ -25,6 +30,7 @@ const Navbar = () => {
             <Link to="/bookings" className="navbar-link">My Bookings</Link>
             <div className="navbar-user">
               <span>{user.firstName} {user.lastName}</span>
+              <button onClick={handleHome} className="home-btn">Home</button>
               <button onClick={handleLogout} className="logout-btn">Logout</button>
             </div>
           </div>

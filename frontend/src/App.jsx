@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AdminProvider, useAdmin } from './contexts/AdminContext';
+import Landing from './components/Landing';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
@@ -12,6 +13,8 @@ import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
 import CourtManagement from './components/admin/CourtManagement';
 import BookingsManagement from './components/admin/BookingsManagement';
+import SportManagement from './components/admin/SportManagement';
+import StaffManagement from './components/admin/StaffManagement';
 import AdminNavbar from './components/admin/AdminNavbar';
 import './App.css';
 
@@ -39,14 +42,17 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Student Routes */}
+        {/* Landing Page */}
+        <Route path="/" element={<Landing />} />
+        
+        {/* Admin Routes */}
         <Route path="/admin/*" element={
           <AdminProvider>
             <AdminRoutes />
           </AdminProvider>
         } />
         
-        {/* Regular Routes */}
+        {/* Student Routes */}
         <Route path="/*" element={
           <AuthProvider>
             <StudentRoutes />
@@ -85,6 +91,22 @@ function AdminRoutes() {
             element={
               <AdminRoute>
                 <BookingsManagement />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="sports"
+            element={
+              <AdminRoute>
+                <SportManagement />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="staff"
+            element={
+              <AdminRoute>
+                <StaffManagement />
               </AdminRoute>
             }
           />
@@ -127,7 +149,6 @@ function StudentRoutes() {
               </PrivateRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/dashboard" />} />
         </Routes>
       </main>
     </div>

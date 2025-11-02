@@ -45,14 +45,27 @@
   gap: 1rem;
 }
 
+.home-btn,
 .logout-btn {
-  background-color: #e74c3c;
   color: white;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s;
+  margin-left: 0.5rem;
+}
+
+.home-btn {
+  background-color: #3498db;
+}
+
+.home-btn:hover {
+  background-color: #2980b9;
+}
+
+.logout-btn {
+  background-color: #e74c3c;
 }
 
 .logout-btn:hover {

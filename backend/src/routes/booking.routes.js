@@ -51,10 +51,24 @@ router.post('/', authenticateToken, async (req, res) => {
       [slotId]
     );
 
-    const startTime = new Date(`1970-01-01T${slotDetails[0].Start_Time}`);
-    const endTime = new Date(`1970-01-01T${slotDetails[0].End_Time}`);
-    const durationHours = (endTime - startTime) / (1000 * 60 * 60);
-    const totalAmount = durationHours * parseFloat(courts[0].Hourly_Rate);
+    if (slotDetails.length === 0) {
+      return res.status(404).json({ error: 'Slot details not found' });
+    }
+
+    // Parse time strings (HH:MM:SS format)
+    const startTimeStr = slotDetails[0].Start_Time;
+    const endTimeStr = slotDetails[0].End_Time;
+    
+    // Convert time string to seconds
+    const parseTimeToSeconds = (timeStr) => {
+      const parts = timeStr.split(':');
+      return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2] || 0);
+    };
+    
+    const startSeconds = parseTimeToSeconds(startTimeStr);
+    const endSeconds = parseTimeToSeconds(endTimeStr);
+    const durationHours = (endSeconds - startSeconds) / 3600;
+    const totalAmount = durationHours * parseFloat(courts[0].Hourly_Rate || 0);
 
     // Start transaction
     const connection = await pool.getConnection();
@@ -267,14 +281,16 @@ router.put('/:id/cancel', authenticateToken, async (req, res) => {
   }
 });
 
-// Confirm booking (update status to Confirmed)
-router.put('/:id/confirm', authenticateToken, async (req, res) => {
+// Mark payment as paid
+router.put('/:id/pay', authenticateToken, async (req, res) => {
   const pool = req.app.locals.pool;
   const ssrn = req.user.ssrn;
+  const { paymentMethod, transactionId } = req.body;
 
   try {
+    // Get booking details
     const [bookings] = await pool.execute(
-      'SELECT Booking_Status FROM Booking WHERE Booking_ID = ? AND SSRN = ?',
+      'SELECT Booking_ID, Total_Amount, Payment_Status, Booking_Status FROM Booking WHERE Booking_ID = ? AND SSRN = ?',
       [req.params.id, ssrn]
     );
 
@@ -282,9 +298,85 @@ router.put('/:id/confirm', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Booking not found' });
     }
 
-    if (bookings[0].Booking_Status !== 'Pending') {
-      return res.status(400).json({ error: 'Only pending bookings can be confirmed' });
+    const booking = bookings[0];
+
+    if (booking.Payment_Status === 'Paid') {
+      return res.status(400).json({ error: 'Booking is already paid' });
     }
+
+    if (booking.Booking_Status === 'Cancelled') {
+      return res.status(400).json({ error: 'Cannot pay for cancelled booking' });
+    }
+
+    // Start transaction
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // Update payment status
+      await connection.execute(
+        'UPDATE Booking SET Payment_Status = "Paid" WHERE Booking_ID = ?',
+        [req.params.id]
+      );
+
+      // Create payment record
+      const [paymentResult] = await connection.execute(
+        `INSERT INTO Payment (Booking_ID, Amount, Payment_Method, Transaction_ID)
+         VALUES (?, ?, ?, ?)`,
+        [req.params.id, booking.Total_Amount, paymentMethod || 'Cash', transactionId || null]
+      );
+
+      await connection.commit();
+      connection.release();
+
+      res.json({ message: 'Payment recorded successfully' });
+    } catch (error) {
+      await connection.rollback();
+      connection.release();
+      throw error;
+    }
+  } catch (error) {
+    console.error('Payment error:', error);
+    res.status(500).json({ error: 'Failed to process payment', message: error.message });
+  }
+});
+
+// Confirm booking (update status to Confirmed)
+router.put('/:id/confirm', authenticateToken, async (req, res) => {
+  const pool = req.app.locals.pool;
+  const ssrn = req.user.ssrn;
+
+  try {
+    // Get booking details
+    const [bookings] = await pool.execute(
+      'SELECT Booking_Status, Payment_Status FROM Booking WHERE Booking_ID = ? AND SSRN = ?',
+      [req.params.id, ssrn]
+    );
+
+    if (bookings.length === 0) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    const booking = bookings[0];
+
+    if (booking.Booking_Status === 'Confirmed') {
+      return res.status(400).json({ error: 'Booking is already confirmed' });
+    }
+
+    if (booking.Booking_Status === 'Cancelled') {
+      return res.status(400).json({ error: 'Cannot confirm cancelled booking' });
+    }
+
+    if (booking.Booking_Status === 'Completed') {
+      return res.status(400).json({ error: 'Cannot confirm completed booking' });
+    }
+
+    // Optionally check if payment is required before confirmation
+    // For now, we'll allow confirmation regardless of payment status
+    // You can uncomment below if you want to require payment first
+    // if (booking.Payment_Status !== 'Paid') {
+    //   return res.status(400).json({ error: 'Payment must be completed before confirming booking' });
+    // }
 
     await pool.execute(
       'UPDATE Booking SET Booking_Status = "Confirmed" WHERE Booking_ID = ?',
