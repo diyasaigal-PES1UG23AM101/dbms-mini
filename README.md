@@ -16,10 +16,10 @@ A comprehensive web-based system for managing sports court bookings at a college
 - **Admin Authentication**: Separate login system for staff members
 - **Dashboard**: Comprehensive statistics overview with metrics
 - **Court Management**: Create, update, and delete courts
-- **Booking Management**: View all bookings with filters (status, date)
-- **Sports Management**: Manage sports in the system (API ready)
-- **Staff Management**: Manage staff members (API ready)
-- **Slot Management**: Manage time slots for courts (API ready)
+- **Booking Management**: View all bookings with filters 
+- **Sports Management**: Manage sports in the system 
+- **Staff Management**: Manage staff members 
+- **Slot Management**: Manage time slots for courts 
 
 ## Database Schema
 
@@ -30,14 +30,10 @@ A comprehensive web-based system for managing sports court bookings at a college
 - **Student**: Registered students who can book courts
 - **Slot**: Time slots for court bookings
 - **Booking**: Student court bookings
-- **Usage_History**: Historical usage records
-- **Payment**: Payment transactions
-
+  
 ### Weak Entities
 - **Equipment**: Depends on Court and Sport
-- **Staff_Phone**: Depends on Staff
-- **Student_Phone**: Depends on Student
-
+  
 ## Tech Stack
 
 ### Backend
@@ -50,7 +46,6 @@ A comprehensive web-based system for managing sports court bookings at a college
 ### Frontend
 - React 18
 - React Router DOM
-- Axios for API calls
 - Vite for build tooling
 
 ## Prerequisites
@@ -168,45 +163,6 @@ INSERT INTO Slot (Court_ID, Slot_Date, Start_Time, End_Time, Status) VALUES
 (2, CURDATE(), '10:00:00', '11:00:00', 'Available');
 ```
 
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register new student
-- `POST /api/auth/login` - Login student
-- `GET /api/auth/verify` - Verify JWT token
-
-### Sports
-- `GET /api/sports` - Get all sports
-- `GET /api/sports/:id` - Get sport by ID
-
-### Courts
-- `GET /api/courts` - Get all courts (query: `sportId`, `status`)
-- `GET /api/courts/:id` - Get court by ID
-- `GET /api/courts/:id/slots` - Get available slots for a court (query: `date`)
-
-### Bookings
-- `POST /api/bookings` - Create new booking (requires auth)
-- `GET /api/bookings` - Get user's bookings (requires auth, query: `status`)
-- `GET /api/bookings/:id` - Get booking by ID (requires auth)
-- `PUT /api/bookings/:id/cancel` - Cancel booking (requires auth)
-- `PUT /api/bookings/:id/confirm` - Confirm booking (requires auth)
-
-### Admin
-- `POST /api/auth/admin/login` - Admin login (staff email required)
-- `GET /api/admin/dashboard` - Get dashboard statistics (requires admin auth)
-- `GET /api/admin/bookings` - Get all bookings (requires admin auth, query: `status`, `date`)
-- `GET /api/admin/courts` - Get all courts (requires admin auth)
-- `POST /api/admin/courts` - Create new court (requires admin auth)
-- `PUT /api/admin/courts/:id` - Update court (requires admin auth)
-- `DELETE /api/admin/courts/:id` - Delete court (requires admin auth)
-- `GET /api/admin/sports` - Get all sports (requires admin auth)
-- `POST /api/admin/sports` - Create sport (requires admin auth)
-- `PUT /api/admin/sports/:id` - Update sport (requires admin auth)
-- `DELETE /api/admin/sports/:id` - Delete sport (requires admin auth)
-- `GET /api/admin/staff` - Get all staff (requires admin auth)
-- `POST /api/admin/staff` - Create staff (requires admin auth)
-- `PUT /api/admin/staff/:id` - Update staff (requires admin auth)
-- `DELETE /api/admin/staff/:id` - Delete staff (requires admin auth)
 
 ## Project Structure
 
@@ -266,36 +222,7 @@ new/
 - SQL injection prevention using parameterized queries
 - CORS configuration
 
-## Future Enhancements
 
-- Payment integration
-- Email notifications
-- Advanced admin panel UI
-- Court equipment management
-- Usage analytics and reports
-- Calendar view for bookings
-- Recurring bookings
-- Waitlist for fully booked slots
-
-## Troubleshooting
-
-### Database Connection Issues
-- Verify MySQL is running
-- Check database credentials in `.env` file
-- Ensure database exists and schema is imported
-
-### Port Conflicts
-- Backend default port: 5000
-- Frontend default port: 5173
-- Update ports in `.env` and `vite.config.js` if needed
-
-### CORS Issues
-- Ensure backend CORS is configured for frontend URL
-- Check if both servers are running
-
-## License
-
-This project is created for academic purposes.
 
 ## Author
 
